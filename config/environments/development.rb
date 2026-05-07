@@ -73,5 +73,4 @@ Rails.application.configure do
     # Avoid "certificate verify failed (unable to get certificate CRL)" on macOS in development
     openssl_verify_mode: OpenSSL::SSL::VERIFY_NONE
   }
-
 end
