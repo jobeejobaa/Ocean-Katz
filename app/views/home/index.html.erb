@@ -6,7 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Clara Katz · Free Diving</title>
   <meta name="description" content="Landing page for a freediving coach." />
+  <%= csrf_meta_tags %>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .contact-feedback { margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-size: 0.95rem; display: none; }
+    .contact-feedback.show { display: block; }
+    .contact-feedback.success { background: rgba(46, 160, 67, 0.15); color: #2ea043; border: 1px solid rgba(46, 160, 67, 0.4); }
+    .contact-feedback.error { background: rgba(220, 53, 69, 0.15); color: #f85149; border: 1px solid rgba(220, 53, 69, 0.4); }
+  </style>
 </head>
 
 <body>
@@ -192,21 +199,22 @@
               Write to me for dates, programs, or collaborations.
             </p>
           </div>
-          <form class="cta-form" action="/contact" method="post">
+          <form id="contact-form" class="cta-form" action="/contact" method="post">
 
             <label>
               Name
-              <input type="text" name="name" placeholder="Your name" />
+              <input type="text" name="name" placeholder="Your name" required />
             </label>
             <label>
               Email
-              <input type="email" name="email" placeholder="Your email" />
+              <input type="email" name="email" placeholder="Your email" required />
             </label>
             <label>
               Message
-              <textarea name="message" rows="4" placeholder="Your message"></textarea>
+              <textarea name="message" rows="4" placeholder="Your message" required></textarea>
             </label>
             <button class="btn btn-primary" type="submit">Send</button>
+            <div id="contact-feedback" class="contact-feedback" role="status" aria-live="polite"></div>
           </form>
         </div>
       </section>
@@ -217,6 +225,54 @@
       <p>This content is a sample. Replace photos and text as needed.</p>
     </footer>
   </div>
+
+  <script>
+    (function () {
+      const form = document.getElementById("contact-form");
+      const feedback = document.getElementById("contact-feedback");
+      if (!form) return;
+
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const button = form.querySelector("button[type=submit]");
+        const original = button.textContent;
+        button.disabled = true;
+        button.textContent = "Sending...";
+        feedback.className = "contact-feedback";
+        feedback.textContent = "";
+
+        try {
+          const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+          const response = await fetch("/contact", {
+            method: "POST",
+            headers: {
+              "Accept": "application/json",
+              "Content-Type": "application/json",
+              "X-CSRF-Token": csrfToken || ""
+            },
+            body: JSON.stringify({
+              name: form.name.value,
+              email: form.email.value,
+              message: form.message.value
+            })
+          });
+
+          if (!response.ok) throw new Error("Network response was not ok");
+
+          feedback.className = "contact-feedback success show";
+          feedback.textContent = "Message sent! I'll get back to you soon.";
+          form.reset();
+        } catch (err) {
+          feedback.className = "contact-feedback error show";
+          feedback.textContent = "Oops, something went wrong. Please try again or email me directly.";
+        } finally {
+          button.disabled = false;
+          button.textContent = original;
+        }
+      });
+    })();
+  </script>
 </body>
 
 </html>
