@@ -1,0 +1,8 @@
+/*
+ * Application-wide styles.
+ * Typography: DIN Alternative on the whole site.
+ */
+html,
+body {
+  font-family: "DIN Alternate", "DIN Alternative", system-ui, -apple-system, sans-serif;
+}
